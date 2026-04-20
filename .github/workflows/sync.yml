@@ -20,10 +20,13 @@ jobs:
           token: ${{ secrets.GH_PAT }}
 
       - name: Configure git
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
         run: |
           git config --global user.email "106829796+marco-fabian@users.noreply.github.com"
           git config --global user.name "Marco Fabian"
-          git config --global http.https://github.com/.extraHeader "Authorization: Bearer ${{ secrets.GH_PAT }}"
+          git config --global credential.helper store
+          echo "https://marco-fabian:${GH_PAT}@github.com" > ~/.git-credentials
 
       - name: Clone private work repos
         run: |
@@ -45,18 +48,17 @@ jobs:
         run: |
           mkdir -p ~/.contrib-mirror/logs ~/.contrib-mirror/cache
 
-          cat > ~/.contrib-mirror/config <<EOF
+          cat > ~/.contrib-mirror/config <<'CONF'
           WORK_DIR="/home/runner/work_repos"
           CACHE_DIR="$HOME/.contrib-mirror/cache"
-          MIRROR_DIR="${GITHUB_WORKSPACE}"
+          MIRROR_DIR="$GITHUB_WORKSPACE"
           LOG_DIR="$HOME/.contrib-mirror/logs"
           EMAILS="marcofabianufmg@hotmail.com,marco@vaipri.com,fin@vaipri.com,106829796+marco-fabian@users.noreply.github.com"
           MIRROR_EMAIL="106829796+marco-fabian@users.noreply.github.com"
           REMOTE_PREFIX="https://github.com/"
           GITHUB_USERNAME="marco-fabian"
-          GITHUB_TOKEN="${GH_PAT}"
           COPY_MESSAGES=0
           ACTIVITY_TYPES="commits"
-          EOF
+          CONF
 
           ~/greens/sync.sh
