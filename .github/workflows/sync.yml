@@ -23,7 +23,7 @@ jobs:
         run: |
           git config --global user.email "106829796+marco-fabian@users.noreply.github.com"
           git config --global user.name "Marco Fabian"
-          git config --global url."https://${{ secrets.GH_PAT }}@github.com/".insteadOf "https://github.com/"
+          git config --global http.https://github.com/.extraHeader "Authorization: Bearer ${{ secrets.GH_PAT }}"
 
       - name: Clone private work repos
         run: |
