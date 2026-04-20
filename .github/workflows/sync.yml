@@ -41,15 +41,22 @@ jobs:
 
       - name: Run greens
         env:
-          WORK_DIR: /home/runner/work_repos
-          MIRROR_DIR: ${{ github.workspace }}
-          CACHE_DIR: /home/runner/.contrib-mirror/cache
-          LOG_DIR:   /home/runner/.contrib-mirror/logs
-          EMAILS: "marcofabianufmg@hotmail.com,marco@vaipri.com,fin@vaipri.com,106829796+marco-fabian@users.noreply.github.com"
-          MIRROR_EMAIL: "106829796+marco-fabian@users.noreply.github.com"
-          REMOTE_PREFIX: "https://github.com/"
-          COPY_MESSAGES: "0"
-          ACTIVITY_TYPES: "commits"
+          GH_PAT: ${{ secrets.GH_PAT }}
         run: |
-          mkdir -p $CACHE_DIR $LOG_DIR
+          mkdir -p ~/.contrib-mirror/logs ~/.contrib-mirror/cache
+
+          cat > ~/.contrib-mirror/config <<EOF
+          WORK_DIR="/home/runner/work_repos"
+          CACHE_DIR="$HOME/.contrib-mirror/cache"
+          MIRROR_DIR="${GITHUB_WORKSPACE}"
+          LOG_DIR="$HOME/.contrib-mirror/logs"
+          EMAILS="marcofabianufmg@hotmail.com,marco@vaipri.com,fin@vaipri.com,106829796+marco-fabian@users.noreply.github.com"
+          MIRROR_EMAIL="106829796+marco-fabian@users.noreply.github.com"
+          REMOTE_PREFIX="https://github.com/"
+          GITHUB_USERNAME="marco-fabian"
+          GITHUB_TOKEN="${GH_PAT}"
+          COPY_MESSAGES=0
+          ACTIVITY_TYPES="commits"
+          EOF
+
           ~/greens/sync.sh
