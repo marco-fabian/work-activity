@@ -1,0 +1,55 @@
+name: Sync contributions
+
+on:
+  schedule:
+    - cron: '0 */3 * * *'   # every 3 hours
+  workflow_dispatch:          # allow manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout mirror repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Configure git
+        run: |
+          git config --global user.email "106829796+marco-fabian@users.noreply.github.com"
+          git config --global user.name "Marco Fabian"
+          git config --global url."https://${{ secrets.GH_PAT }}@github.com/".insteadOf "https://github.com/"
+
+      - name: Clone private work repos
+        run: |
+          mkdir -p ~/work_repos
+          git clone --quiet https://github.com/iaprodoc/agent-builder-atelier.git ~/work_repos/agent-builder-atelier
+          git clone --quiet https://github.com/iaprodoc/ai-hub-dash.git            ~/work_repos/ai-hub-dash
+          git clone --quiet https://github.com/marco-fabian/projetos-marco.git     ~/work_repos/projetos-marco
+          # Add more repos here as needed:
+          # git clone --quiet https://github.com/<org>/<repo>.git ~/work_repos/<repo>
+
+      - name: Install greens
+        run: |
+          git clone --quiet https://github.com/yuvrajangadsingh/private-work-contributions-mirror.git ~/greens
+          chmod +x ~/greens/sync.sh
+
+      - name: Run greens
+        env:
+          WORK_DIR: /home/runner/work_repos
+          MIRROR_DIR: ${{ github.workspace }}
+          CACHE_DIR: /home/runner/.contrib-mirror/cache
+          LOG_DIR:   /home/runner/.contrib-mirror/logs
+          EMAILS: "marcofabianufmg@hotmail.com,marco@vaipri.com,fin@vaipri.com,106829796+marco-fabian@users.noreply.github.com"
+          MIRROR_EMAIL: "106829796+marco-fabian@users.noreply.github.com"
+          REMOTE_PREFIX: "https://github.com/"
+          COPY_MESSAGES: "0"
+          ACTIVITY_TYPES: "commits"
+        run: |
+          mkdir -p $CACHE_DIR $LOG_DIR
+          ~/greens/sync.sh
